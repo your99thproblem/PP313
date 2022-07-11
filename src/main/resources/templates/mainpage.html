@@ -14,7 +14,7 @@
     <nav class="navbar navbar-expand-xl navbar-dark bg-dark">
         <div class="container-fluid">
             <div>
-                <span class="text-white" th:utext="${currentUser.username}">NOT FOUND</span>
+                <span class="text-white" th:utext="${currentUser.getUsername()}">NOT FOUND</span>
                 <span class="text-white"> with roles: </span>
                 <span class="text-white" th:each="role : ${currentUser.user.userRoleList}"
                       th:if="${role.role.name.startsWith('ROLE_')}"
@@ -100,7 +100,7 @@
                                         </div>
                                         <div class="modal-body">
                                             <form id="edit-form" role="form" th:method="post"
-                                                  th:action="@{/admin/edituser}">
+                                                  th:action="@{/api/admin/edituser}">
                                                 <input id="update-id" readonly th:value="${user.id}" th:name="id"
                                                        th:id="id"/>
                                                 <fieldset class="form-group">
@@ -170,7 +170,7 @@
                                             </div>
                                             <div class="modal-body">
                                                 <form id="delete-form" role="form" th:method="post"
-                                                      th:action="@{/admin/deleteuser}">
+                                                      th:action="@{/api/admin/deleteuser}">
                                                     <input id="delete-id" readonly th:value="${user.id}" th:name="id"
                                                            th:id="id"/>
                                                     <fieldset class="form-group">
@@ -231,7 +231,7 @@
                 </div>
                 <!--            Форма создания нового юзера-->
                 <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
-                    <form action="#" th:action="@{/admin/newuser}" th:object="${newuser}" method="post">
+                    <form action="#" th:action="@{/api/admin/newuser}" th:object="${newuser}" method="post">
                         <label for="Name" class="form-label">Name</label>
                         <input type="text" th:field="*{name}" class="form-control" id="name" placeholder="Name">
                         <label for="Email" class="form-label">Email</label>

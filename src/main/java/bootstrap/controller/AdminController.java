@@ -7,7 +7,6 @@ import bootstrap.service.UserDetailsServiceImpl;
 import bootstrap.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -38,19 +37,19 @@ public class AdminController {
                           @RequestParam("rolesToUser") String[] rolesToUsers) {
         System.out.println("check");
         userService.saveUser(user, rolesToUsers);
-        return "redirect:/admin";
+        return "redirect:/api/admin";
     }
     @PostMapping("/admin/edituser")
     public String editUser(@ModelAttribute("user") User user,
                           @RequestParam("rolesToUser") String[] rolesToUsers) {
         userService.update(user, rolesToUsers);
-        return "redirect:/admin";
+        return "redirect:/api/admin";
     }
 
     @PostMapping("/admin/deleteuser")
     public String deleteUser(@ModelAttribute("user") User user) {
         userService.delete(user.getId());
-        return "redirect:/admin";
+        return "redirect:/api/admin";
     }
 
 }
