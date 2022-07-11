@@ -1,0 +1,326 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+</head>
+<body>
+<!--Строка с пользователем и логаутом-->
+<div>
+    <nav class="navbar navbar-expand-xl navbar-dark bg-dark">
+        <div class="container-fluid">
+            <div>
+                <span class="text-white" th:utext="${currentUser.username}">NOT FOUND</span>
+                <span class="text-white"> with roles: </span>
+                <span class="text-white" th:each="role : ${currentUser.user.userRoleList}"
+                      th:if="${role.role.name.startsWith('ROLE_')}"
+                      th:text="${role.role.name.replaceFirst('ROLE_', '') + ' '}">
+            </span>
+            </div>
+            <div>
+                <a th:href="@{/logout}">Logout</a>
+            </div>
+
+        </div>
+    </nav>
+</div>
+<!--Строка с пользователем и логаутом-->
+
+<!--******************************************************************************************-->
+
+
+<!--Вертикальный навбар админ/юзер-->
+
+<div class="d-flex align-items-start">
+    <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+        <a sec:authorize="hasRole('ROLE_ADMIN')" class="nav-link active" id="v-pills-home-tab" data-bs-toggle="pill"
+           href="#adminpanel" role="tab"
+           aria-controls="v-pills-home" aria-selected="true">Admin</a>
+        <a
+                th:class="${hasAdminRole} ? 'nav-link' : 'nav-link active'"
+                th:attr="aria-selected=${hasAdminRole} ? 'false' : 'true'"
+                id="v-pills-profile-tab" data-bs-toggle="pill" href="#v-pills-profile" role="tab"
+                aria-controls="v-pills-profile">User's page</a>
+    </div>
+    <div class="tab-content" id="v-pills-tabContent">
+        <div sec:authorize="hasRole('ROLE_ADMIN')" class="tab-pane fade show active" id="adminpanel" role="tabpanel"
+             aria-labelledby="v-pills-home-tab">
+            <h2>ADMIN PANEL</h2>
+            <nav class="nav nav-tabs" id="nav-tab" role="tablist">
+                <a class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" href="#nav-home" role="tab"
+                   aria-controls="nav-home" aria-selected="true">Users table</a>
+                <a class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" href="#nav-profile" role="tab"
+                   aria-controls="nav-profile" aria-selected="false">New user</a></nav>
+            <div class="tab-content" id="nav-tabContent">
+                <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+
+                    <!--                    Таблица юзеров на админке-->
+                    <h3>All users</h3>
+                    <table class="table table-sm">
+                        <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Roles</th>
+                            <th scope="col">Edit</th>
+                            <th scope="col">Delete</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        <tr th:each="user : ${listUser}">
+                            <td th:utext="${user.id}">id</td>
+                            <td th:utext="${user.name}">username</td>
+                            <td th:utext="${user.email}">name</td>
+                            <td><p th:each="roles : ${user.getUserRoleList()}">
+                                <span th:if="${roles.getRole().name.startsWith('ROLE_')}"
+                                      th:text="${roles.getRole().name.replaceFirst('ROLE_', '') + ' '}">Roles</span>
+                            </p>
+                            </td>
+
+                            <td>
+                                <button type="button" class="btn btn-info" data-bs-toggle="modal"
+                                        data-bs-target="#editUser" th:attrappend="data-bs-target=${user.id}">Edit
+                                </button>
+                            </td>
+
+                            <div class="modal fade" id="editUser" th:attrappend="id=${user.id}" tabindex="-1"
+                                 aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">Edit user</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form id="edit-form" role="form" th:method="post"
+                                                  th:action="@{/admin/edituser}">
+                                                <input id="update-id" readonly th:value="${user.id}" th:name="id"
+                                                       th:id="id"/>
+                                                <fieldset class="form-group">
+                                                    <label for="update-name">Name</label>
+                                                    <input th:value="${user.name}" th:name="name" th:id="name"
+                                                           class="form-control"
+                                                           id="update-name"
+                                                           type="text"
+                                                           placeholder="Name"/>
+                                                </fieldset>
+                                                <fieldset class="form-group">
+                                                    <label for="update-email">Email</label>
+                                                    <input th:value="${user.email}" th:name="email" th:id="email"
+                                                           class="form-control"
+                                                           id="update-email"
+                                                           type="email"
+                                                           placeholder="Email"/>
+                                                </fieldset>
+                                                <fieldset class="form-group">
+                                                    <label for="update-password">Password</label>
+                                                    <input th:value="${user.password}" th:name="password"
+                                                           th:id="password" class="form-control"
+                                                           id="update-password"
+                                                           type="password"
+                                                           placeholder="Password"/>
+                                                </fieldset>
+                                                <fieldset>
+                                                    <label for="update-role">Role</label>
+                                                    <select class="form-select" size="3" name="rolesToUser"
+                                                            id="update-role" multiple>
+                                                        <option th:each="role : ${listRoles}" th:value="${role.id}"
+                                                                th:if="${role.getName().startsWith('ROLE_')}"
+                                                                th:text="${role.getName().replaceFirst('ROLE_', '') + ' '}">
+                                                        </option>
+                                                    </select>
+                                                </fieldset>
+
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                            data-bs-dismiss="modal">
+                                                        Close
+                                                    </button>
+                                                    <button type="submit" class="btn btn-primary">Edit</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <td>
+                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                                            data-bs-target="#deleteUser" th:attrappend="data-bs-target=${user.id}">
+                                        Delete
+                                    </button>
+                                </td>
+
+
+                                <div class="modal fade" id="deleteUser" th:attrappend="id=${user.id}" tabindex="-1"
+                                     aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="deleteModalLabel">Delete user</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form id="delete-form" role="form" th:method="post"
+                                                      th:action="@{/admin/deleteuser}">
+                                                    <input id="delete-id" readonly th:value="${user.id}" th:name="id"
+                                                           th:id="id"/>
+                                                    <fieldset class="form-group">
+                                                        <label for="update-name">Name</label>
+                                                        <input th:value="${user.name}" th:name="name" th:id="name"
+                                                               class="form-control"
+                                                               id="delete-name"
+                                                               type="text"
+                                                               placeholder="Name"
+                                                               readonly/>
+                                                    </fieldset>
+                                                    <fieldset class="form-group">
+                                                        <label for="update-email">Email</label>
+                                                        <input th:value="${user.email}" th:name="email" th:id="email"
+                                                               class="form-control"
+                                                               id="delete-email"
+                                                               type="email"
+                                                               placeholder="Email"
+                                                               readonly/>
+                                                    </fieldset>
+                                                    <fieldset class="form-group">
+                                                        <label for="update-password">Password</label>
+                                                        <input th:value="${user.password}" th:name="password"
+                                                               th:id="password" class="form-control"
+                                                               id="delete-password"
+                                                               type="password"
+                                                               placeholder="Password"
+                                                               readonly/>
+                                                    </fieldset>
+                                                    <fieldset>
+                                                        <label for="update-role">Role</label>
+                                                        <select class="form-select" size="3" name="rolesToUser"
+                                                                id="delete-role" multiple>
+                                                            <option th:each="role : ${listRoles}" th:value="${role.id}"
+                                                                    th:if="${role.getName().startsWith('ROLE_')}"
+                                                                    th:text="${role.getName().replaceFirst('ROLE_', '') + ' '}"
+                                                                    th:selected="${user.getUserRoleList().contains(role)} ? selected ">
+                                                            </option>
+                                                        </select>
+                                                    </fieldset>
+
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary"
+                                                                data-bs-dismiss="modal">
+                                                            Close
+                                                        </button>
+                                                        <button type="submit" class="btn btn-primary">Edit</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!--            Форма создания нового юзера-->
+                <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+                    <form action="#" th:action="@{/admin/newuser}" th:object="${newuser}" method="post">
+                        <label for="Name" class="form-label">Name</label>
+                        <input type="text" th:field="*{name}" class="form-control" id="name" placeholder="Name">
+                        <label for="Email" class="form-label">Email</label>
+                        <input type="email" th:field="*{email}" class="form-control" id="email"
+                               placeholder="name@example.com">
+                        <label for="Password" class="form-label">Password</label>
+                        <input type="text" th:field="*{password}" class="form-control" id="password"
+                               placeholder="Password">
+                        <select class="form-select" name="rolesToUser" id="roles" multiple>
+                            <option th:each="role : ${listRoles}" th:value="${role.id}"
+                                    th:if="${role.getName().startsWith('ROLE_')}"
+                                    th:text="${role.getName().replaceFirst('ROLE_', '') + ' '}">
+                            </option>
+                        </select>
+                        <button type="submit" class="btn btn-success">
+                            Create
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+        <div th:class="${hasAdminRole} ? 'tab-pane fade' : 'tab-pane fade show active'"
+             id="v-pills-profile"
+             role="tabpanel"
+             aria-labelledby="v-pills-profile-tab">
+            <h2>User Information Page</h2>
+            <table class="table-bordered">
+                <thead>
+                <tr>
+                    <th scope="col" colspan="4">About User</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <th>
+                        <table class="table-bordered ">
+                            <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Roles</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <th scope="row">1</th>
+                                <td th:utext="${currentUser.user.id}">id</td>
+                                <td th:utext="${currentUser.user.name}">username</td>
+                                <td th:utext="${currentUser.user.email}">name</td>
+                                <td><p th:each="roles : ${currentUser.user.userRoleList}">
+                                <span th:if="${roles.getRole().name.startsWith('ROLE_')}"
+                                      th:text="${roles.getRole().name.replaceFirst('ROLE_', '') + ' '}">Roles</span>
+                                </p>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                </tbody>
+            </table>
+            </th>
+            </tr>
+
+
+        </div>
+    </div>
+</div>
+
+<!--Вертикальный навбар админ/юзер-->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+
+
+<script>
+    $(".nav li").on("click", function () {
+        $(".nav li").remove("active");
+        $(this).addClass("active");
+    });
+</script>
+
+<script>
+    $(".nav-link li").on("click", function () {
+        $(".nav-link li").remove("active");
+        $(this).addClass("active");
+    });
+</script>
+
+</body>
+</html>
